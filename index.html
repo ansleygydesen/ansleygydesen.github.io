@@ -1,0 +1,229 @@
+Ansley Gydesen's Project Portfolio (index.html)**
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ansley Gydesen - Project Portfolio</title>
+    <style>
+        /* --- Basic Setup --- */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* --- Header & Hero Section --- */
+        header.hero {
+            background: linear-gradient(-45deg, #003366, #004080, #336699, #6699CC);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            color: white;
+            padding: 6rem 2rem;
+            text-align: center;
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        header.hero h1 {
+            font-size: 3.5rem;
+            margin: 0;
+            font-weight: 700;
+        }
+
+        header.hero .subtitle {
+            font-size: 1.25rem;
+            font-weight: 300;
+            opacity: 0.9;
+        }
+
+        /* --- Section Styling --- */
+        section {
+            padding: 3rem 1rem;
+            margin-top: 2rem;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        h2 {
+            font-size: 2.25rem;
+            font-weight: 600;
+            color: #004080;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #6699CC;
+            display: inline-block;
+            margin-bottom: 2rem;
+        }
+
+        p {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+        }
+
+        /* --- Focus Areas (Cards) --- */
+        .focus-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: space-between;
+        }
+
+        .focus-card {
+            flex-basis: 100%;
+            background: #fdfdfd;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .focus-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+        }
+
+        .focus-card h3 {
+            font-size: 1.5rem;
+            color: #003366;
+            margin-top: 0;
+        }
+
+        @media (min-width: 768px) {
+            .focus-card {
+                flex-basis: 30%; /* Three cards in a row on larger screens */
+            }
+        }
+
+        /* --- Projects Placeholder --- */
+        #projects {
+            text-align: center;
+            background-color: #f4f7f6;
+        }
+
+        #projects p {
+            font-style: italic;
+            color: #555;
+            font-size: 1.15rem;
+        }
+
+        /* --- Footer --- */
+        footer {
+            text-align: center;
+            padding: 2rem;
+            margin-top: 2rem;
+            color: #777;
+        }
+
+        footer .links a {
+            color: #004080;
+            text-decoration: none;
+            font-weight: 600;
+            margin: 0 15px;
+            font-size: 1.1rem;
+            transition: color 0.3s ease;
+        }
+
+        footer .links a:hover {
+            color: #6699CC;
+        }
+
+        footer .copyright {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+
+    </style>
+</head>
+<body>
+
+    <header class="hero">
+        <div class="container">
+            [cite_start]<h1>Hi, I'm Ansley Gydesen.</h1> [cite: 1]
+            <p class="subtitle">Welcome to my personal project portfolio.</p>
+        </div>
+    </header>
+
+    <main class="container">
+
+        <section id="about">
+            <h2>About Me</h2>
+            <p>
+                [cite_start]I am a student at the University of Nebraska—Lincoln, pursuing dual degrees in Journalism and Political Science[cite: 6]. [cite_start]I am on track to graduate in May 2027[cite: 5].
+            </p>
+            <p>
+                This website serves as a collection of my miscellaneous web apps and projects, where I explore topics at the intersection of data, media, and public affairs. My background gives me a unique lens for turning complex information into compelling, accessible, and data-driven narratives.
+            </p>
+        </section>
+
+        <section id="focus">
+            <h2>My Focus Areas</h2>
+            <div class="focus-container">
+                
+                <div class="focus-card">
+                    <h3>Journalism & Media</h3>
+                    <p>
+                        [cite_start]With extensive experience on a newspaper staff, I've held roles from Staff Reporter to Editor-in-Chief[cite: 23, 30]. [cite_start]My background includes composing articles [cite: 24][cite_start], photography [cite: 25][cite_start], page design with InDesign [cite: 27][cite_start], and editing[cite: 31].
+                    </p>
+                </div>
+                
+                <div class="focus-card">
+                    <h3>Political Science</h3>
+                    <p>
+                        [cite_start]My coursework has provided a strong foundation in political analysis, including investigating the media's role in politics [cite: 16][cite_start], the influence of the United Nations in world politics [cite: 14][cite_start], and the complexities of civil liberties[cite: 8].
+                    </p>
+                </div>
+
+                <div class="focus-card">
+                    <h3>Data & Statistics</h3>
+                    <p>
+                        [cite_start]As part of my studies, I have experience with social statistics[cite: 10]. [cite_start]This includes running various tests like t-tests, ANOVA, correlation, and multiple regression [cite: 11][cite_start], as well as working with z-scores, confidence intervals, and inferential statistics[cite: 12].
+                    </p>
+                </div>
+
+            </div>
+        </section>
+
+        <section id="projects">
+            <h2>My Projects</h2>
+            <p>
+                This section is coming soon!
+                <br>
+                I'll be uploading projects related to data visualization, media analysis, and more.
+            </p>
+        </section>
+
+    </main>
+
+    <footer>
+        <div class="links">
+            [cite_start]<a href="mailto:ansley13679@gmail.com">Email Me</a> [cite: 2]
+            <a href="#" target="_blank" rel="noopener noreferrer">GitHub</a>
+            <a href="#" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+        </div>
+        <p class="copyright">
+            &copy; [cite_start]2025 Ansley Gydesen [cite: 1]
+        </p>
+    </footer>
+
+</body>
+</html>
+```
