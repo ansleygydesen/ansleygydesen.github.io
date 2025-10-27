@@ -1,229 +1,432 @@
-Ansley Gydesen's Project Portfolio (index.html)**
-
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ansley Gydesen - Project Portfolio</title>
+    <title>Daily Nebraskan News Quiz</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* --- Basic Setup --- */
+        /* Use Inter font */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f9f9f9;
-            color: #333;
-            line-height: 1.6;
+            font-family: 'Inter', sans-serif;
         }
-
-        .container {
-            max-width: 960px;
-            margin: 0 auto;
-            padding: 20px;
+        /* Custom styles for answer buttons */
+        .option-btn {
+            transition: all 0.2s ease-in-out;
         }
-
-        /* --- Header & Hero Section --- */
-        header.hero {
-            background: linear-gradient(-45deg, #003366, #004080, #336699, #6699CC);
-            background-size: 400% 400%;
-            animation: gradientBG 15s ease infinite;
+        .option-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .option-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+        /* Correct/Incorrect state styles */
+        .option-btn.correct {
+            background-color: #22c55e; /* green-500 */
+            border-color: #16a34a; /* green-600 */
             color: white;
-            padding: 6rem 2rem;
-            text-align: center;
-            border-bottom-left-radius: 10px;
-            border-bottom-right-radius: 10px;
+        }
+        .option-btn.incorrect {
+            background-color: #ef4444; /* red-500 */
+            border-color: #dc2626; /* red-600 */
+            color: white;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+
+    <div class="bg-white w-full max-w-xl p-6 md:p-8 rounded-xl shadow-2xl">
+        
+        <!-- Start Screen -->
+        <div id="start-screen" class="">
+            <img src="https://placehold.co/600x200/E8000D/FFFFFF?text=Daily+Nebraskan&font=inter" alt="Daily Nebraskan Header" class="w-full h-auto rounded-lg mb-6"
+                 onerror="this.onerror=null; this.src='https://placehold.co/600x200/E8000D/FFFFFF?text=Daily+Nebraskan&font=inter';">
+            <h1 class="text-3xl font-bold text-center text-gray-800 mb-4">Nebraska Sports News Quiz</h1>
+            <p class="text-center text-gray-600 mb-8">Test your knowledge of recent Husker sports news. You'll get 5 random questions.</p>
+            <button id="start-btn" class="w-full bg-red-700 text-white font-bold py-3 px-6 rounded-lg text-lg hover:bg-red-800 transition-colors duration-200 shadow-lg hover:shadow-xl">
+                Start Quiz
+            </button>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="quiz-screen" class="hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-red-700">Husker News Quiz</h2>
+                <span id="question-counter" class="text-lg font-semibold text-gray-600"></span>
+            </div>
+            
+            <div class="bg-gray-50 p-6 rounded-lg shadow-inner mb-6 min-h-[100px]">
+                <p id="question-text" class="text-lg font-medium text-gray-900"></p>
+            </div>
+
+            <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <!-- Answer options will be dynamically inserted here -->
+            </div>
+
+            <div id="feedback-message" class="text-center text-md font-medium mt-4 min-h-[1.5em]">
+                <!-- Feedback ("Correct!" or "Incorrect") will appear here -->
+            </div>
+        </div>
+
+        <!-- Results Screen -->
+        <div id="results-screen" class="hidden text-center">
+            <h1 class="text-3xl font-bold text-gray-800 mb-4">Quiz Complete!</h1>
+            <div class="bg-red-50 p-8 rounded-lg shadow-inner mb-8">
+                <p class="text-xl text-gray-700 mb-2">Your Final Score:</p>
+                <p id="score-text" class="text-6xl font-extrabold text-red-700"></p>
+            </div>
+            <button id="restart-btn" class="w-full bg-red-700 text-white font-bold py-3 px-6 rounded-lg text-lg hover:bg-red-800 transition-colors duration-200 shadow-lg hover:shadow-xl">
+                Try Again
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        // --- Question Data ---
+        // This is the JSON data you provided, embedded directly into the script
+        const allQuestions = [
+          {
+            "question_number": 1,
+            "question_text": "By beating Northwestern, Nebraska secured bowl eligibility for the first time in the month of October since 2016.",
+            "question_type": "True/False",
+            "options": [],
+            "answer": "True"
+          },
+          {
+            "question_number": 2,
+            "question_text": "What grade did the Nebraska football rushing attack receive for its performance against Northwestern?",
+            "question_type": "Multiple Choice",
+            "options": [
+              "A",
+              "B-",
+              "A-",
+              "B+"
+            ],
+            "answer": "A-"
+          },
+          {
+            "question_number": 3,
+            "question_text": "Against Minnesota, Nebraska's offensive line allowed only one sack.",
+            "question_type": "True/False",
+            "options": [],
+            "answer": "False"
+          },
+          {
+            "question_number": 4,
+            "question_text": "Who is the Big Ten’s current rushing leader, according to the Northwestern report card?",
+            "question_type": "Multiple Choice",
+            "options": [
+              "Isaiah Mozee",
+              "Anthony Grant",
+              "Dylan Raiola",
+              "Emmett Johnson"
+            ],
+            "answer": "Emmett Johnson"
+          },
+          {
+            "question_number": 5,
+            "question_text": "The Nebraska rushing defense received a D+ grade against Northwestern after allowing 172 rushing yards.",
+            "question_type": "True/False",
+            "options": [],
+            "answer": "True"
+          },
+          {
+            "question_number": 6,
+            "question_text": "Which player returned a kickoff 95 yards for a touchdown against Northwestern?",
+            "question_type": "Multiple Choice",
+            "options": [
+              "Kenneth Williams",
+              "JD Spielman",
+              "Nyziah Hunter",
+              "Donovan Jones"
+            ],
+            "answer": "Kenneth Williams"
+          },
+          {
+            "question_number": 7,
+            "question_text": "Nebraska's volleyball team (as of the first article) has not lost a set since their match against Creighton on Sept. 16.",
+            "question_type": "True/False",
+            "options": [],
+            "answer": "True"
+          },
+          {
+            "question_number": 8,
+            "question_text": "Who is the head coach of the Nebraska volleyball team?",
+            "question_type": "Multiple Choice",
+            "options": [
+              "Mike Ekeler",
+              "Dani Busboom Kelly",
+              "Donovan Raiola",
+              "P.J. Fleck"
+            ],
+            "answer": "Dani Busboom Kelly"
+          },
+          {
+            "question_number": 9,
+            "question_text": "Nebraska’s loss to Minnesota was the team's first game playing as a nationally ranked team this season.",
+            "question_type": "True/False",
+            "options": [],
+            "answer": "True"
+          },
+          {
+            "question_number": 10,
+            "question_text": "How many times was Nebraska QB Dylan Raiola sacked in the game against Minnesota?",
+            "question_type": "Multiple Choice",
+            "options": [
+              "Nine times",
+              "Five times",
+              "One time",
+              "Three times"
+            ],
+            "answer": "Nine times"
+          },
+          {
+            "question_number": 11,
+            "question_text": "Nebraska has not beaten Minnesota in football since 2018.",
+            "question_type": "True/False",
+            "options": [],
+            "answer": "True"
+          },
+          {
+            "question_number": 12,
+            "question_text": "Which Nebraska offensive lineman was ejected for targeting during the second quarter of the Minnesota game?",
+            "question_type": "Multiple Choice",
+            "options": [
+              "Rocco Spindler",
+              "Tyler Knaak",
+              "Elijah Pritchett",
+              "Dasan McCullough"
+            ],
+            "answer": "Elijah Pritchett"
+          },
+          {
+            "question_number": 13,
+            "question_text": "Minnesota running back Darius Taylor rushed for 148 yards against Nebraska.",
+            "question_type": "True/False",
+            "options": [],
+            "answer": "True"
+          },
+          {
+            "question_number": 14,
+            "question_text": "After sweeping Michigan State, the Nebraska volleyball team's overall record improved to:",
+            "question_type": "Multiple Choice",
+            "options": [
+              "18-0",
+              "10-0",
+              "20-0",
+              "13-7"
+            ],
+            "answer": "20-0"
+          },
+          {
+            "question_number": 15,
+            "question_text": "The Nebraska volleyball team’s 28-set win streak (as of the first article) broke the 2010 team's record of 30 straight sets.",
+            "question_type": "True/False",
+            "options": [],
+            "answer": "False"
+          },
+          {
+            "question_number": 16,
+            "question_text": "Against Michigan State, which Nebraska volleyball player achieved a career-high hitting percentage of .667?",
+            "question_type": "Multiple Choice",
+            "options": [
+              "Rebekah Allick",
+              "Adriano",
+              "Bergen Reilly",
+              "Andi Jackson"
+            ],
+            "answer": "Adriano"
+          },
+          {
+            "question_number": 17,
+            "question_text": "According to the article, Nebraska volleyball averages more fans at home (8,600) than they do on the road (8,056).",
+            "question_type": "True/False",
+            "options": [],
+            "answer": "True"
+          },
+          {
+            "question_number": 18,
+            "question_text": "Who was the reigning Big Ten Defensive Player of the Week mentioned in the volleyball streak article?",
+            "question_type": "Multiple Choice",
+            "options": [
+              "Andi Jackson",
+              "Rebekah Allick",
+              "Malayah Long",
+              "Bergen Reilly"
+            ],
+            "answer": "Andi Jackson"
+          },
+          {
+            "question_number": 19,
+            "question_text": "Nebraska linebacker Javin Wright intercepted a pass from Northwestern QB Preston Stone.",
+            "question_type": "True/False",
+            "options": [],
+            "answer": "True"
+          },
+          {
+            "question_number": 20,
+            "question_text": "Against Northwestern, quarterback Dylan Raiola completed 73% of his passes.",
+            "question_type": "True/False",
+            "options": [],
+            "answer": "True"
+          }
+        ];
+
+        // --- DOM Elements ---
+        const startScreen = document.getElementById('start-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultsScreen = document.getElementById('results-screen');
+        
+        const startBtn = document.getElementById('start-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        
+        const questionCounter = document.getElementById('question-counter');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const feedbackMessage = document.getElementById('feedback-message');
+        
+        const scoreText = document.getElementById('score-text');
+
+        // --- Quiz State ---
+        let quizQuestions = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+        const totalQuizQuestions = 5;
+
+        // --- Event Listeners ---
+        startBtn.addEventListener('click', startGame);
+        restartBtn.addEventListener('click', startGame);
+
+        // --- Functions ---
+
+        /**
+         * Starts or restarts the quiz.
+         * Resets state, selects new questions, and shows the quiz screen.
+         */
+        function startGame() {
+            // Reset state
+            score = 0;
+            currentQuestionIndex = 0;
+            quizQuestions = selectRandomQuestions(allQuestions, totalQuizQuestions);
+            
+            // Update UI
+            startScreen.classList.add('hidden');
+            resultsScreen.classList.add('hidden');
+            quizScreen.classList.remove('hidden');
+            
+            displayQuestion();
         }
 
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+        /**
+         * Shuffles an array and selects the first N questions.
+         * Uses Fisher-Yates (Knuth) shuffle algorithm.
+         */
+        function selectRandomQuestions(sourceArray, numQuestions) {
+            const shuffled = [...sourceArray];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled.slice(0, numQuestions);
         }
 
-        header.hero h1 {
-            font-size: 3.5rem;
-            margin: 0;
-            font-weight: 700;
+        /**
+         * Displays the current question and its options.
+         */
+        function displayQuestion() {
+            // Clear previous options and feedback
+            optionsContainer.innerHTML = '';
+            feedbackMessage.innerHTML = '';
+
+            // Get current question
+            const question = quizQuestions[currentQuestionIndex];
+            
+            // Update UI
+            questionText.textContent = question.question_text;
+            questionCounter.textContent = `Question ${currentQuestionIndex + 1} of ${totalQuizQuestions}`;
+            
+            // Create answer options
+            let options = [];
+            if (question.question_type === 'True/False') {
+                options = ['True', 'False'];
+            } else {
+                options = question.options;
+            }
+
+            // Create buttons for each option
+            options.forEach(option => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                button.classList.add('option-btn', 'w-full', 'bg-white', 'text-gray-700', 'font-semibold', 'py-3', 'px-5', 'rounded-lg', 'border-2', 'border-gray-300', 'hover:bg-gray-50');
+                button.addEventListener('click', () => checkAnswer(option, button));
+                optionsContainer.appendChild(button);
+            });
         }
 
-        header.hero .subtitle {
-            font-size: 1.25rem;
-            font-weight: 300;
-            opacity: 0.9;
+        /**
+         * Checks the selected answer, provides feedback, and updates the score.
+         */
+        function checkAnswer(selectedOption, clickedButton) {
+            // Disable all buttons to prevent multiple answers
+            const optionButtons = optionsContainer.querySelectorAll('.option-btn');
+            optionButtons.forEach(btn => btn.disabled = true);
+
+            const question = quizQuestions[currentQuestionIndex];
+            const correctAnswer = question.answer;
+
+            if (selectedOption === correctAnswer) {
+                // Correct answer
+                score++;
+                clickedButton.classList.add('correct');
+                feedbackMessage.textContent = 'Correct!';
+                feedbackMessage.classList.add('text-green-600');
+                feedbackMessage.classList.remove('text-red-600');
+            } else {
+                // Incorrect answer
+                clickedButton.classList.add('incorrect');
+                feedbackMessage.textContent = `Sorry, the correct answer was: ${correctAnswer}`;
+                feedbackMessage.classList.add('text-red-600');
+                feedbackMessage.classList.remove('text-green-600');
+
+                // Highlight the correct answer
+                optionButtons.forEach(btn => {
+                    if (btn.textContent === correctAnswer) {
+                        btn.classList.add('correct');
+                    }
+                });
+            }
+
+            // Wait 1.5 seconds before moving to the next question
+            setTimeout(() => {
+                nextQuestion();
+            }, 1500);
         }
 
-        /* --- Section Styling --- */
-        section {
-            padding: 3rem 1rem;
-            margin-top: 2rem;
-            background-color: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        }
-
-        h2 {
-            font-size: 2.25rem;
-            font-weight: 600;
-            color: #004080;
-            padding-bottom: 10px;
-            border-bottom: 3px solid #6699CC;
-            display: inline-block;
-            margin-bottom: 2rem;
-        }
-
-        p {
-            font-size: 1.1rem;
-            margin-bottom: 1rem;
-        }
-
-        /* --- Focus Areas (Cards) --- */
-        .focus-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            justify-content: space-between;
-        }
-
-        .focus-card {
-            flex-basis: 100%;
-            background: #fdfdfd;
-            border: 1px solid #eee;
-            border-radius: 8px;
-            padding: 25px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .focus-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
-        }
-
-        .focus-card h3 {
-            font-size: 1.5rem;
-            color: #003366;
-            margin-top: 0;
-        }
-
-        @media (min-width: 768px) {
-            .focus-card {
-                flex-basis: 30%; /* Three cards in a row on larger screens */
+        /**
+         * Moves to the next question or shows the results screen if the quiz is over.
+         */
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < totalQuizQuestions) {
+                displayQuestion();
+            } else {
+                showResults();
             }
         }
 
-        /* --- Projects Placeholder --- */
-        #projects {
-            text-align: center;
-            background-color: #f4f7f6;
+        /**
+         * Hides the quiz screen and displays the final score.
+         */
+        function showResults() {
+            quizScreen.classList.add('hidden');
+            resultsScreen.classList.remove('hidden');
+            scoreText.textContent = `${score} / ${totalQuizQuestions}`;
         }
-
-        #projects p {
-            font-style: italic;
-            color: #555;
-            font-size: 1.15rem;
-        }
-
-        /* --- Footer --- */
-        footer {
-            text-align: center;
-            padding: 2rem;
-            margin-top: 2rem;
-            color: #777;
-        }
-
-        footer .links a {
-            color: #004080;
-            text-decoration: none;
-            font-weight: 600;
-            margin: 0 15px;
-            font-size: 1.1rem;
-            transition: color 0.3s ease;
-        }
-
-        footer .links a:hover {
-            color: #6699CC;
-        }
-
-        footer .copyright {
-            margin-top: 1rem;
-            font-size: 0.9rem;
-        }
-
-    </style>
-</head>
-<body>
-
-    <header class="hero">
-        <div class="container">
-            [cite_start]<h1>Hi, I'm Ansley Gydesen.</h1> [cite: 1]
-            <p class="subtitle">Welcome to my personal project portfolio.</p>
-        </div>
-    </header>
-
-    <main class="container">
-
-        <section id="about">
-            <h2>About Me</h2>
-            <p>
-                [cite_start]I am a student at the University of Nebraska—Lincoln, pursuing dual degrees in Journalism and Political Science[cite: 6]. [cite_start]I am on track to graduate in May 2027[cite: 5].
-            </p>
-            <p>
-                This website serves as a collection of my miscellaneous web apps and projects, where I explore topics at the intersection of data, media, and public affairs. My background gives me a unique lens for turning complex information into compelling, accessible, and data-driven narratives.
-            </p>
-        </section>
-
-        <section id="focus">
-            <h2>My Focus Areas</h2>
-            <div class="focus-container">
-                
-                <div class="focus-card">
-                    <h3>Journalism & Media</h3>
-                    <p>
-                        [cite_start]With extensive experience on a newspaper staff, I've held roles from Staff Reporter to Editor-in-Chief[cite: 23, 30]. [cite_start]My background includes composing articles [cite: 24][cite_start], photography [cite: 25][cite_start], page design with InDesign [cite: 27][cite_start], and editing[cite: 31].
-                    </p>
-                </div>
-                
-                <div class="focus-card">
-                    <h3>Political Science</h3>
-                    <p>
-                        [cite_start]My coursework has provided a strong foundation in political analysis, including investigating the media's role in politics [cite: 16][cite_start], the influence of the United Nations in world politics [cite: 14][cite_start], and the complexities of civil liberties[cite: 8].
-                    </p>
-                </div>
-
-                <div class="focus-card">
-                    <h3>Data & Statistics</h3>
-                    <p>
-                        [cite_start]As part of my studies, I have experience with social statistics[cite: 10]. [cite_start]This includes running various tests like t-tests, ANOVA, correlation, and multiple regression [cite: 11][cite_start], as well as working with z-scores, confidence intervals, and inferential statistics[cite: 12].
-                    </p>
-                </div>
-
-            </div>
-        </section>
-
-        <section id="projects">
-            <h2>My Projects</h2>
-            <p>
-                This section is coming soon!
-                <br>
-                I'll be uploading projects related to data visualization, media analysis, and more.
-            </p>
-        </section>
-
-    </main>
-
-    <footer>
-        <div class="links">
-            [cite_start]<a href="mailto:ansley13679@gmail.com">Email Me</a> [cite: 2]
-            <a href="#" target="_blank" rel="noopener noreferrer">GitHub</a>
-            <a href="#" target="_blank" rel="noopener noreferrer">LinkedIn</a>
-        </div>
-        <p class="copyright">
-            &copy; [cite_start]2025 Ansley Gydesen [cite: 1]
-        </p>
-    </footer>
-
+    </script>
 </body>
 </html>
-```
