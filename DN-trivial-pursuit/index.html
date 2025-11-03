@@ -531,6 +531,7 @@
              * Updates the player's token position on the board.
              */
             function movePlayer(newPosition, instant = false) {
+                    // wrap around board length
                 state.player.position = newPosition % gameData.board.length;
                 dom.positionDisplay.textContent = state.player.position;
 
@@ -539,15 +540,23 @@
 
                 const spaceRect = spaceEl.getBoundingClientRect();
                 const boardRect = dom.board.getBoundingClientRect();
-                
-                // Calculate position relative to the board
+
+                // Calculate position relative to the board (center of the space)
                 const top = spaceRect.top - boardRect.top + (spaceRect.height / 2) - (dom.token.offsetHeight / 2);
                 const left = spaceRect.left - boardRect.left + (spaceRect.width / 2) - (dom.token.offsetWidth / 2);
 
                 if (instant) {
+                    //instantly move (no animation)
                     dom.token.style.transition = 'none';
+                    dom.token.style.left = `${left}px,`;
+                    dom.token.style.top = `${top}px`;
+                    //force reflow so next transisitions aren't skipped void dom.token.offsetWidth;
+                    //restore transition
+                    dom.token.style.transition = 'left 0.28s ease-in-out, top 0.28s ease-in-out';
                 } else {
-                    dom.token.style.transition = 'all 0.3s ease-in-out'; /* <-- Sped up transition */
+                    //animated move
+                    dom.token.style.left = `${left}px`;
+                    dom.token.style.top = `${top}px`;
                 }
 
                 dom.token.style.transform = `translate(${left}px, ${top}px)`;
