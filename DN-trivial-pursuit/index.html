@@ -44,7 +44,7 @@
             grid-template-rows: repeat(4, 1fr);
             gap: 8px;
             width: 100%;
-            max-width: 600px;
+            max-width: 768px; /* <-- Increased from 600px */
             margin: 20px auto;
         }
 
@@ -58,7 +58,7 @@
             align-items: center;
             justify-content: center;
             font-weight: 900;
-            font-size: 0.75rem;
+            font-size: 0.875rem; /* <-- Increased from 0.75rem */
             text-align: center;
             padding: 4px;
             text-shadow: 0 1px 2px rgba(0,0,0,0.2);
@@ -82,8 +82,8 @@
         /* Player Token */
         #player-token {
             position: absolute;
-            width: 40px;
-            height: 40px;
+            width: 48px; /* <-- Increased from 40px */
+            height: 48px; /* <-- Increased from 40px */
             background-color: var(--dn-red);
             border: 4px solid var(--dn-white);
             border-radius: 50%;
@@ -94,7 +94,7 @@
             justify-content: center;
             font-weight: 900;
             color: var(--dn-white);
-            transition: all 0.5s ease-in-out;
+            transition: all 0.3s ease-in-out; /* <-- Sped up transition */
             /* Will be positioned by JS */
         }
 
@@ -540,7 +540,7 @@
                 if (instant) {
                     dom.token.style.transition = 'none';
                 } else {
-                    dom.token.style.transition = 'all 0.5s ease-in-out';
+                    dom.token.style.transition = 'all 0.3s ease-in-out'; /* <-- Sped up transition */
                 }
 
                 dom.token.style.transform = `translate(${left}px, ${top}px)`;
@@ -576,7 +576,7 @@
                         // Finished moving, now handle the space action
                         handleSpaceAction();
                     }
-                }, 300); // 300ms per step
+                }, 400); // <-- Slowed down step time from 300ms
             }
 
             /**
@@ -740,6 +740,7 @@
     </script>
 </body>
 </html>
+
 
 
 
