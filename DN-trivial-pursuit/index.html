@@ -467,7 +467,12 @@
                 dom.logo.src = gameData.logoUrl;
                 
                 renderBoard();
-                movePlayer(0, true); // Place player at start
+                
+                // Use setTimeout to ensure the board is painted before we measure for token placement
+                setTimeout(() => {
+                    movePlayer(0, true); // Place player at start
+                }, 0); 
+                
                 updateScoreDisplay();
 
                 // Add event listeners
@@ -736,4 +741,3 @@
     </script>
 </body>
 </html>
-
