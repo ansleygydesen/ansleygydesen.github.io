@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Nebraskan - News Quiz</title>
+    <!-- 1. Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 2. Load Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <!-- 3. Custom CSS and Theme -->
+    <style>
+        :root {
+            /* Daily Nebraskan Theme Colors */
+            --dn-red: #D00000;
+            --dn-black: #1a1a1a;
+            --dn-white: #FFFFFF;
+            --dn-gray: #f0f0f0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--dn-gray);
+        }
+
+        /* Custom DN colors for Tailwind */
+        .bg-dn-red { background-color: var(--dn-red); }
+        .text-dn-red { color: var(--dn-red); }
+        .border-dn-red { border-color: var(--dn-red); }
+        .bg-dn-black { background-color: var(--dn-black); }
+        .text-dn-black { color: var(--dn-black); }
+        .bg-dn-white { background-color: var(--dn-white); }
+        .bg-dn-gray { background-color: var(--dn-gray); }
+
+        /* Game Board Styles */
+        #game-board {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px;
+            width: 100%;
+            max-width: 600px;
+            margin: 20px auto;
+        }
+
+        .board-space {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            border-radius: 8px;
+            border: 4px solid var(--dn-black);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 0.75rem;
+            text-align: center;
+            padding: 4px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+
+        /* Category Colors */
+        .space-news { background-color: var(--dn-red); color: white; border-color: var(--dn-red); }
+        .space-sports { background-color: var(--dn-black); color: white; }
+        .space-culture { background-color: var(--dn-white); color: black; }
+        .space-opinion { background-color: #666; color: white; border-color: #555; }
+        .space-hub {
+            background-image: linear-gradient(135deg, var(--dn-red) 25%, var(--dn-black) 25%, var(--dn-black) 50%, var(--dn-white) 50%, var(--dn-white) 75%, #666 75%);
+            border-color: var(--dn-black);
+        }
+        .space-roll {
+            background-color: #eab308; /* Yellow */
+            color: var(--dn-black);
+            border-color: #ca8a04;
+        }
+
+        /* Player Token */
+        #player-token {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background-color: var(--dn-red);
+            border: 4px solid var(--dn-white);
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            color: var(--dn-white);
+            transition: all 0.5s ease-in-out;
+            /* Will be positioned by JS */
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed;
+            z-index: 50;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            position: relative;
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 24px;
+            border: 4px solid var(--dn-black);
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        /* Custom Radio Buttons for Answers */
+        .answer-option {
+            display: block;
+            position: relative;
+            padding: 12px 12px 12px 45px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            font-size: 1rem;
+            border: 2px solid var(--dn-gray);
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+        .answer-option input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+        }
+        .answer-option:hover {
+            background-color: #f9f9f9;
+            border-color: #ccc;
+        }
+        .answer-option .checkmark {
+            position: absolute;
+            top: 50%;
+            left: 12px;
+            transform: translateY(-50%);
+            height: 25px;
+            width: 25px;
+            background-color: var(--dn-gray);
+            border-radius: 50%;
+            border: 1px solid #ccc;
+        }
+        .answer-option input:checked ~ .checkmark {
+            background-color: var(--dn-red);
+            border-color: var(--dn-red);
+        }
+        .answer-option .checkmark:after {
+            content: "";
+            position: absolute;
+            display: none;
+            top: 9px;
+            left: 9px;
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: white;
+        }
+        .answer-option input:checked ~ .checkmark:after {
+            display: block;
+        }
+
+        /* Result Feedback */
+        #answer-result {
+            display: none; /* Hidden until answer is submitted */
+            padding: 16px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-top: 16px;
+        }
+        #answer-result.correct {
+            background-color: #dcfce7; /* Green */
+            color: #166534;
+            border: 2px solid #166534;
+        }
+        #answer-result.wrong {
+            background-color: #fee2e2; /* Red */
+            color: var(--dn-red);
+            border: 2px solid var(--dn-red);
+        }
+    </style>
+</head>
+<body class="bg-dn-gray min-h-screen p-4 md:p-8">
+
+    <!-- Header -->
+    <header class="max-w-4xl mx-auto text-center border-b-4 border-dn-black pb-4 mb-4">
+        <img id="logo" src="httpsimg-placeholder" alt="The Daily Nebraskan" class="h-12 md:h-16 mx-auto"
+             onerror="this.style.display='none'; document.getElementById('logo-text').style.display='block'">
+        <!-- Fallback text if logo fails to load -->
+        <h1 id="logo-text" class="text-4xl font-black text-dn-black" style="display: none;">The Daily Nebraskan</h1>
+        <h2 class="text-xl md:text-2xl font-bold text-dn-red mt-2">Trivial Pursuit: News Quiz</h2>
+    </header>
+
+    <main class="max-w-4xl mx-auto">
+        
+        <!-- Score & Controls -->
+        <div class="bg-dn-white p-4 rounded-lg shadow-md border-2 border-dn-black flex flex-col md:flex-row justify-around items-center gap-4">
+            <div class="text-center">
+                <div class="text-sm font-bold text-gray-600 uppercase">Score</div>
+                <div class="text-2xl font-black">
+                    <span class="text-green-600" id="score-correct">0</span>
+                    <span class="text-dn-black mx-1">/</span>
+                    <span class="text-dn-red" id="score-wrong">0</span>
+                </div>
+                <div class="text-xs">
+                    <span class="text-green-600">Correct</span> / <span class="text-dn-red">Wrong</span>
+                </div>
+            </div>
+
+            <button id="roll-button" class="bg-dn-red text-white font-bold py-3 px-8 rounded-lg shadow-lg transform transition-transform hover:scale-105 active:scale-95 text-xl">
+                Roll Dice
+            </button>
+
+            <div class="text-center">
+                <div class="text-sm font-bold text-gray-600 uppercase">Position</div>
+                <div class="text-3xl font-black text-dn-black" id="current-position-display">0</div>
+                <div class="text-xs">Space</div>
+            </div>
+        </div>
+
+        <!-- Game Board -->
+        <div id="game-board-container" class="relative">
+            <div id="game-board">
+                <!-- Spaces will be generated by JavaScript -->
+            </div>
+            <div id="player-token">P1</div>
+        </div>
+    </main>
+
+    <!-- Question Modal -->
+    <div id="question-modal" class="modal">
+        <div class="modal-content">
+            <div id="question-category" class="font-bold uppercase text-sm mb-2">CATEGORY</div>
+            <h3 id="question-text" class="text-2xl font-bold text-dn-black mb-4">Question text will go here.</h3>
+            
+            <form id="question-form">
+                <div id="answer-options">
+                    <!-- Options will be generated by JavaScript -->
+                </div>
+
+                <button type="submit" class="bg-dn-black text-white w-full py-3 rounded-lg font-bold text-lg mt-4 hover:bg-gray-800">
+                    Submit Answer
+                </button>
+            </form>
+
+            <!-- Result Feedback Box -->
+            <div id="answer-result">
+                <span id="result-text"></span>
+                <span id="correct-answer-text" class="block text-sm font-normal mt-1"></span>
+            </div>
+
+            <button id="next-button" class="bg-dn-red text-white w-full py-2 rounded-lg font-bold text-lg mt-4 hover:bg-red-700" style="display: none;">
+                Next Roll
+            </button>
+        </div>
+    </div>
+
+    <!-- JavaScript Game Engine -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- 1. GAME DATA (JSON) ---
+            // This object contains all the game's content and configuration.
+            const gameData = {
+                logoUrl: "https://snworks.g.a.noobias.com/dn/dist/img/logo-md-black.svg",
+                themeColors: {
+                    "news": "var(--dn-red)",
+                    "sports": "var(--dn-black)",
+                    "culture": "var(--dn-white)",
+                    "opinion": "#666"
+                },
+                categories: {
+                    "news": { title: "News" },
+                    "sports": { title: "Sports" },
+                    "culture": { title: "Culture" },
+                    "opinion": { title: "Opinion" }
+                },
+                board: [
+                    { type: "hub", category: "hub", label: "START" },
+                    { type: "category", category: "news" },
+                    { type: "category", category: "sports" },
+                    { type: "category", category: "culture" },
+                    { type: "roll", label: "ROLL AGAIN" },
+                    { type: "category", category: "opinion" },
+                    { type: "category", category: "news" },
+                    { type: "hub", category: "hub", label: "HUB" },
+                    { type: "category", category: "sports" },
+                    { type: "category", category: "culture" },
+                    { type: "category", category: "opinion" },
+                    { type: "roll", label: "ROLL AGAIN" },
+                    { type: "category", category: "news" },
+                    { type: "category", category: "sports" },
+                    { type: "hub", category: "hub", label: "HUB" },
+                    { type: "category", category: "culture" },
+                    { type: "category", category: "opinion" },
+                    { type: "category", category: "news" },
+                    { type: "roll", label: "ROLL AGAIN" },
+                    { type: "category", category: "sports" },
+                    { type: "category", category: "culture" },
+                    { type: "hub", category: "hub", label: "HUB" },
+                    { type: "category", category: "opinion" },
+                    { type: "category", category: "news" }
+                ],
+                questionBank: {
+                    "news": [
+                        {
+                            "q": "What is the total budget deficit UNL is trying to address with program cuts?",
+                            "options": ["$27.5 million", "$75 million", "$100 million", "$12.5 million"],
+                            "correct": 0
+                        },
+                        {
+                            "q": "According to author Corinna Lain, what drug did Nebraska once try to use for lethal injection?",
+                            "options": ["Morphine", "Fentanyl", "Pentobarbital", "Dr. Jay Chapman's mix"],
+                            "correct": 1
+                        },
+                        {
+                            "q": "Human skeletal remains found at Scotts Bluff National Monument are believed to belong to what missing Wyoming man?",
+                            "options": ["Robert Kelchen", "Chris Bilder", "Chance Englebert", "William V. Shyne"],
+                            "correct": 2
+                        },
+                        {
+                            "q": "Statistics professor Chris Bilder said comparing programs with the university's metrics was like comparing \"apples to ______.\"",
+                            "options": ["Oranges", "The Raikes School", "Pumpkins", "Peaches"],
+                            "correct": 2
+                        },
+                        {
+                            "q": "A fire was reported in a dryer in which UNL residence hall?",
+                            "options": ["Abel/Sandoz", "The Courtyards", "Smith Hall", "The Gaughan Center"],
+                            "correct": 1
+                        }
+                    ],
+                    "sports": [
+                        {
+                            "q": "What season-ending injury did QB Dylan Raiola suffer against USC?",
+                            "options": ["Torn ACL", "Concussion", "Broken Ankle", "Broken Fibula"],
+                            "correct": 3
+                        },
+                        {
+                            "q": "Who is the true freshman quarterback set to replace Dylan Raiola?",
+                            "options": ["TJ Lateef", "Jayden Maiava", "Emmett Johnson", "Carter Booth"],
+                            "correct": 0
+                        },
+                        {
+                            "q": "The Nebraska volleyball team's 34-set win streak was snapped after not losing a set since a match against which rival?",
+                            "options": ["Wisconsin", "Penn State", "Creighton", "Texas"],
+                            "correct": 2
+                        },
+                        {
+                            "q": "According to the article, what percentage of sets had Nebraska won while holding their conference opponent to less than 20 points?",
+                            "options": ["50%", "90.9%", "76.7%", "85%"],
+                            "correct": 3
+                        }
+                    ],
+                    "culture": [
+                        {
+                            "q": "What is the name of the Daily Nebraskan's in-office concert series inspired by NPR's Tiny Desk?",
+                            "options": ["Husker Hub", "Tiny DN", "Press Play", "The Centennial Room"],
+                            "correct": 2
+                        },
+                        {
+                            "q": "Mochi donuts, like those at MoDo, are a fusion of American donuts and donuts from what other country?",
+                            "options": ["Japan", "Korea", "China", "Vietnam"],
+                            "correct": 0
+                        },
+                        {
+                            "q": "What UNL student organization hosted the 'Night of the Living Drag Show'?",
+                            "options": ["ASUN", "Spectrum UNL", "The DailyER", "MoDo"],
+                            "correct": 1
+                        },
+                        {
+                            "q": "The 2019 Nebraska Hemp Farming Act allows for the sale of hemp as long as it contains less than what percent of delta-9 THC?",
+                            "options": ["0.3%", "3.0%", "0.03%", "1.0%"],
+                            "correct": 2 
+                        },
+                        {
+                            "q": "What is the name of the six-piece psychedelic rock band featured in the 'Press Play' Halloween special?",
+                            "options": ["Duster", "Ivory Daze", "Smoke in the Sunlight", "Flatch Hest"],
+                            "correct": 2
+                        }
+                    ],
+                    "opinion": [
+                        {
+                            "q": "An opinion column argues that pop culture has normalized what \"trope,\" turning queer people into side characters?",
+                            "options": ["The 'gay best friend'", "The 'tragic hero'", "The 'comedic relief'", "The 'wise elder'"],
+                            "correct": 0
+                        },
+                        {
+                            "q": "In 1959, a California dentist, William V. Shyne, handed out what to trick-or-treaters?",
+                            "options": ["Fentanyl", "Heroin", "Candy-coated laxatives", "Razors"],
+                            "correct": 2
+                        },
+                        {
+                            "q": "ASUN passed a resolution to release a statement against 'Cornhusker' being associated with what?",
+                            "options": ["The UNL budget cuts", "The McCook ICE detention center", "The Daily Nebraskan", "Low-scoring programs"],
+                            "correct": 1
+                        },
+                        {
+                            "q": "One column argues that Gen Z members may feel 'behind in life' due to their teenage years being 'tainted' by what major event?",
+                            "options": ["The 2016 Election", "The rise of TikTok", "The COVID-19 pandemic", "The 'Cornhusker Clink'"],
+                            "correct": 2
+                        }
+                    ]
+                }
+            };
+
+            // --- 2. GAME STATE ---
+            const state = {
+                score: {
+                    correct: 0,
+                    wrong: 0,
+                },
+                player: {
+                    position: 0,
+                },
+                currentQuestion: null,
+                askedQuestions: { // To avoid repeats
+                    news: [],
+                    sports: [],
+                    culture: [],
+                    opinion: []
+                }
+            };
+
+            // --- 3. DOM ELEMENT REFERENCES ---
+            const dom = {
+                logo: document.getElementById('logo'),
+                board: document.getElementById('game-board'),
+                token: document.getElementById('player-token'),
+                rollButton: document.getElementById('roll-button'),
+                scoreCorrect: document.getElementById('score-correct'),
+                scoreWrong: document.getElementById('score-wrong'),
+                positionDisplay: document.getElementById('current-position-display'),
+                modal: document.getElementById('question-modal'),
+                questionForm: document.getElementById('question-form'),
+                questionCategory: document.getElementById('question-category'),
+                questionText: document.getElementById('question-text'),
+                answerOptions: document.getElementById('answer-options'),
+                answerResult: document.getElementById('answer-result'),
+                resultText: document.getElementById('result-text'),
+                correctAnswerText: document.getElementById('correct-answer-text'),
+                nextButton: document.getElementById('next-button'),
+            };
+
+            // --- 4. GAME LOGIC FUNCTIONS ---
+
+            /**
+             * Initializes the game, renders the board, and sets up listeners.
+             */
+            function initGame() {
+                // Set logo
+                dom.logo.src = gameData.logoUrl;
+                
+                renderBoard();
+                movePlayer(0, true); // Place player at start
+                updateScoreDisplay();
+
+                // Add event listeners
+                dom.rollButton.addEventListener('click', rollDice);
+                dom.questionForm.addEventListener('submit', handleSubmitAnswer);
+                dom.nextButton.addEventListener('click', closeQuestionModal);
+            }
+
+            /**
+             * Renders the game board spaces based on gameData.
+             */
+            function renderBoard() {
+                dom.board.innerHTML = ''; // Clear board
+                gameData.board.forEach((space, index) => {
+                    const spaceEl = document.createElement('div');
+                    spaceEl.classList.add('board-space');
+                    spaceEl.id = `space-${index}`;
+                    
+                    let label = space.label || gameData.categories[space.category]?.title || '';
+                    spaceEl.textContent = label.toUpperCase();
+
+                    if (space.type === 'category') {
+                        spaceEl.classList.add(`space-${space.category}`);
+                    } else if (space.type === 'hub') {
+                        spaceEl.classList.add('space-hub');
+                    } else if (space.type === 'roll') {
+                        spaceEl.classList.add('space-roll');
+                    }
+                    
+                    dom.board.appendChild(spaceEl);
+                });
+            }
+
+            /**
+             * Updates the player's token position on the board.
+             */
+            function movePlayer(newPosition, instant = false) {
+                state.player.position = newPosition % gameData.board.length;
+                dom.positionDisplay.textContent = state.player.position;
+
+                const spaceEl = document.getElementById(`space-${state.player.position}`);
+                if (!spaceEl) return;
+
+                const spaceRect = spaceEl.getBoundingClientRect();
+                const boardRect = dom.board.getBoundingClientRect();
+                
+                // Calculate position relative to the board
+                const top = spaceRect.top - boardRect.top + (spaceRect.height / 2) - (dom.token.offsetHeight / 2);
+                const left = spaceRect.left - boardRect.left + (spaceRect.width / 2) - (dom.token.offsetWidth / 2);
+
+                if (instant) {
+                    dom.token.style.transition = 'none';
+                } else {
+                    dom.token.style.transition = 'all 0.5s ease-in-out';
+                }
+
+                dom.token.style.transform = `translate(${left}px, ${top}px)`;
+            }
+
+            /**
+             * Updates the score display on the UI.
+             */
+            function updateScoreDisplay() {
+                dom.scoreCorrect.textContent = state.score.correct;
+                dom.scoreWrong.textContent = state.score.wrong;
+            }
+
+            /**
+             * Simulates a dice roll and moves the player.
+             */
+            function rollDice() {
+                dom.rollButton.disabled = true;
+                dom.rollButton.textContent = 'Rolling...';
+                
+                const roll = Math.floor(Math.random() * 6) + 1;
+                
+                // Animate the roll
+                let currentStep = 0;
+                const newPosition = (state.player.position + roll) % gameData.board.length;
+
+                const moveInterval = setInterval(() => {
+                    if (currentStep < roll) {
+                        movePlayer(state.player.position + 1);
+                        currentStep++;
+                    } else {
+                        clearInterval(moveInterval);
+                        // Finished moving, now handle the space action
+                        handleSpaceAction();
+                    }
+                }, 300); // 300ms per step
+            }
+
+            /**
+             * Determines what to do based on the space the player landed on.
+             */
+            function handleSpaceAction() {
+                const space = gameData.board[state.player.position];
+
+                if (space.type === 'category' || space.type === 'hub') {
+                    // For hubs, just ask a question from a random category
+                    let category = space.category;
+                    if (category === 'hub') {
+                        const categories = Object.keys(gameData.categories);
+                        category = categories[Math.floor(Math.random() * categories.length)];
+                    }
+                    showQuestion(category);
+                } else if (space.type === 'roll') {
+                    // Landed on Roll Again
+                    dom.rollButton.disabled = false;
+                    dom.rollButton.textContent = 'Roll Again!';
+                }
+            }
+
+            /**
+             * Selects, displays, and opens the question modal.
+             */
+            function showQuestion(category) {
+                const questionBank = gameData.questionBank[category];
+                if (!questionBank || questionBank.length === 0) {
+                    console.error(`No questions for category: ${category}`);
+                    closeQuestionModal();
+                    return;
+                }
+
+                // Find a question that hasn't been asked
+                let availableQuestions = questionBank.filter((q, index) => !state.askedQuestions[category].includes(index));
+                
+                // If all questions in this category asked, reset
+                if (availableQuestions.length === 0) {
+                    state.askedQuestions[category] = [];
+                    availableQuestions = questionBank;
+                }
+
+                const qIndex = Math.floor(Math.random() * availableQuestions.length);
+                const question = availableQuestions[qIndex];
+                
+                // Store question index to avoid repeats
+                const originalIndex = questionBank.indexOf(question);
+                state.askedQuestions[category].push(originalIndex);
+
+                state.currentQuestion = question;
+
+                // Populate modal
+                dom.questionCategory.textContent = gameData.categories[category].title;
+                dom.questionCategory.style.color = gameData.themeColors[category] || 'black';
+                dom.questionText.textContent = question.q;
+
+                // Populate answers
+                dom.answerOptions.innerHTML = '';
+                question.options.forEach((option, index) => {
+                    dom.answerOptions.innerHTML += `
+                        <label class="answer-option">
+                            ${option}
+                            <input type="radio" name="answer" value="${index}">
+                            <span class="checkmark"></span>
+                        </label>
+                    `;
+                });
+
+                // Reset form state
+                dom.answerResult.style.display = 'none';
+                dom.nextButton.style.display = 'none';
+                dom.questionForm.style.display = 'block';
+
+                // Show modal
+                dom.modal.style.display = 'block';
+            }
+
+            /**
+             * Hides the question modal and re-enables rolling.
+             */
+            function closeQuestionModal() {
+                dom.modal.style.display = 'none';
+                dom.rollButton.disabled = false;
+                dom.rollButton.textContent = 'Roll Dice';
+                state.currentQuestion = null;
+            }
+
+            /**
+             * Handles the answer submission from the modal.
+             */
+            function handleSubmitAnswer(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(dom.questionForm);
+                const selectedAnswer = formData.get('answer');
+
+                if (selectedAnswer === null) {
+                    alert('Please select an answer.');
+                    return;
+                }
+
+                const selectedIndex = parseInt(selectedAnswer, 10);
+                const isCorrect = (selectedIndex === state.currentQuestion.correct);
+
+                // Show result
+                dom.answerResult.style.display = 'block';
+                dom.questionForm.style.display = 'none';
+                dom.nextButton.style.display = 'block';
+
+                if (isCorrect) {
+                    state.score.correct++;
+                    dom.answerResult.className = 'correct';
+                    dom.resultText.textContent = 'Correct!';
+                    dom.correctAnswerText.textContent = '';
+                } else {
+                    state.score.wrong++;
+                    dom.answerResult.className = 'wrong';
+                    dom.resultText.textContent = 'Wrong!';
+                    dom.correctAnswerText.textContent = `The correct answer was: ${state.currentQuestion.options[state.currentQuestion.correct]}`;
+                }
+
+                updateScoreDisplay();
+            }
+
+            // --- 5. START THE GAME ---
+            initGame();
+
+        });
+    </script>
+</body>
+</html>
