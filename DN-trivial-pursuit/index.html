@@ -40,6 +40,7 @@
         #game-board {
             display: grid;
             grid-template-columns: repeat(6, 1fr);
+            grid-template-rows: repeat(4, 1fr);
             gap: 8px;
             width: 100%;
             max-width: 600px;
@@ -480,10 +481,25 @@
              */
             function renderBoard() {
                 dom.board.innerHTML = ''; // Clear board
+                
+                // This map defines the "snake" path on the 4x6 grid
+                const routeMap = [
+                    {r: 1, c: 1}, {r: 1, c: 2}, {r: 1, c: 3}, {r: 1, c: 4}, {r: 1, c: 5}, {r: 1, c: 6}, // Row 1 (L-R)
+                    {r: 2, c: 6}, {r: 2, c: 5}, {r: 2, c: 4}, {r: 2, c: 3}, {r: 2, c: 2}, {r: 2, c: 1}, // Row 2 (R-L)
+                    {r: 3, c: 1}, {r: 3, c: 2}, {r: 3, c: 3}, {r: 3, c: 4}, {r: 3, c: 5}, {r: 3, c: 6}, // Row 3 (L-R)
+                    {r: 4, c: 6}, {r: 4, c: 5}, {r: 4, c: 4}, {r: 4, c: 3}, {r: 4, c: 2}, {r: 4, c: 1}  // Row 4 (R-L)
+                ];
+
                 gameData.board.forEach((space, index) => {
                     const spaceEl = document.createElement('div');
                     spaceEl.classList.add('board-space');
                     spaceEl.id = `space-${index}`;
+
+                    // Apply the specific grid position from our route map
+                    const pos = routeMap[index];
+                    if (pos) {
+                        spaceEl.style.gridArea = `${pos.r} / ${pos.c}`;
+                    }
                     
                     let label = space.label || gameData.categories[space.category]?.title || '';
                     spaceEl.textContent = label.toUpperCase();
@@ -639,9 +655,33 @@
              * Hides the question modal and re-enables rolling.
              */
             function closeQuestionModal() {
+                // Check if we are in a 'Game Over' state
+                if (dom.nextButton.textContent === 'Restart Game') {
+                    resetGame();
+                    return; // resetGame() handles hiding modal etc.
+                }
                 dom.modal.style.display = 'none';
                 dom.rollButton.disabled = false;
                 dom.rollButton.textContent = 'Roll Dice';
+                state.currentQuestion = null;
+            }
+
+            /**
+             * Resets the game to its initial state.
+             */
+            function resetGame() {
+                state.score.correct = 0;
+                state.score.wrong = 0;
+                state.player.position = 0;
+                state.askedQuestions = { news: [], sports: [], culture: [], opinion: [] };
+
+                updateScoreDisplay();
+                movePlayer(0, true);
+                
+                dom.modal.style.display = 'none';
+                dom.rollButton.disabled = false;
+                dom.rollButton.textContent = 'Roll Dice';
+                dom.nextButton.textContent = 'Next Roll'; // Reset button text
                 state.currentQuestion = null;
             }
 
@@ -675,8 +715,15 @@
                 } else {
                     state.score.wrong++;
                     dom.answerResult.className = 'wrong';
-                    dom.resultText.textContent = 'Wrong!';
-                    dom.correctAnswerText.textContent = `The correct answer was: ${state.currentQuestion.options[state.currentQuestion.correct]}`;
+
+                    if (state.score.wrong >= 5) {
+                        dom.resultText.textContent = 'Game Over! 5 wrong.';
+                        dom.correctAnswerText.textContent = 'The game will restart.';
+                        dom.nextButton.textContent = 'Restart Game';
+                    } else {
+                        dom.resultText.textContent = 'Wrong!';
+                        dom.correctAnswerText.textContent = `The correct answer was: ${state.currentQuestion.options[state.currentQuestion.correct]}`;
+                    }
                 }
 
                 updateScoreDisplay();
@@ -689,3 +736,4 @@
     </script>
 </body>
 </html>
+
