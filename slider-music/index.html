@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UNL Music School Changes</title>
+    
+    <style>
+        /* --- Basic Page Setup --- */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 90vh;
+        }
+
+        .slider-content {
+            width: 100%;
+            max-width: 900px; /* You can adjust this max-width */
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        p.instructions {
+            font-size: 1rem;
+            color: #555;
+            margin-bottom: 1.5rem;
+        }
+
+        /* --- Image Comparison Slider --- */
+        #comparison-container {
+            position: relative;
+            width: 100%;
+            /* Use an aspect-ratio based on your images to prevent layout shift */
+            /* The provided images are 1000x820, which is a 1.2195 ratio */
+            /* 820 / 1000 = 0.82 */
+            aspect-ratio: 1000 / 820;
+            overflow: hidden;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            
+            /* Prevents weird text selection while dragging */
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+
+        /* --- Image Styling --- */
+        #comparison-container img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Ensures images fill the container */
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none; /* Allows clicks/drags to go "through" the image */
+        }
+
+        #after-image {
+            /* We will control this with JavaScript using clip-path */
+            clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);
+        }
+        
+        /* --- Date Labels --- */
+        .slider-label {
+            position: absolute;
+            top: 1rem;
+            padding: 0.5rem 1rem;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border-radius: 4px;
+            pointer-events: none; /* Don't let labels interfere with dragging */
+        }
+        
+        #label-before {
+            left: 1rem;
+        }
+        
+        #label-after {
+            right: 1rem;
+        }
+
+        /* --- Slider Handle & Line --- */
+        #slider-line {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%; /* Initial position, controlled by JS */
+            width: 4px;
+            background-color: white;
+            transform: translateX(-50%);
+            pointer-events: none; /* The grip is the only interactive part */
+            box-shadow: 0 0 5px rgba(0,0,0,0.5);
+        }
+
+        #slider-grip {
+            position: absolute;
+            top: 50%;
+            left: 50%; /* Initial position, controlled by JS */
+            width: 44px;
+            height: 44px;
+            background-color: white;
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+            transform: translate(-50%, -50%); /* Centers the grip on the line */
+            cursor: ew-resize; /* East-West resize cursor */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            /* Prevents touch actions like scrolling */
+            touch-action: none; 
+        }
+
+        /* --- Arrows inside the grip --- */
+        #slider-grip::before,
+        #slider-grip::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-color: transparent #333 transparent #333; /* Arrow color */
+        }
+        
+        #slider-grip::before {
+            /* Left arrow */
+            border-width: 6px 8px 6px 0;
+            border-right-color: #333;
+            margin-left: -12px;
+        }
+
+        #slider-grip::after {
+            /* Right arrow */
+            border-width: 6px 0 6px 8px;
+            border-left-color: #333;
+            margin-left: 12px;
+        }
+        
+        /* --- Mobile-specific tweaks --- */
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.25rem;
+            }
+            p.instructions {
+                font-size: 0.9rem;
+            }
+            /* Make grip slightly larger and easier to press on touch */
+            #slider-grip {
+                width: 50px;
+                height: 50px;
+            }
+            .slider-label {
+                font-size: 0.75rem;
+                padding: 0.3rem 0.6rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="slider-content">
+        <h1>Check out the changes to UNL's School of Music from 2014 to 2025</h1>
+        
+        <p class="instructions">
+            <strong>On Desktop:</strong> Click and drag the white circle.
+            <br>
+            <strong>On Mobile:</strong> Touch and swipe the white circle.
+        </p>
+        
+        <div id="comparison-container">
+            <img id="before-image" src="campusoctober2014.jpg" alt="UNL School of Music area in October 2014">
+            <div id="label-before" class="slider-label">2014</div>
+            
+            <img id="after-image" src="campusmarch2025.jpg" alt="UNL School of Music area in March 2025">
+            <div id="label-after" class="slider-label">2025</div>
+            
+            <div id="slider-line"></div>
+            <div id="slider-grip"></div>
+        </div>
+    </div>
+
+    <script>
+        // Wait for the DOM to be fully loaded before running the script
+        document.addEventListener('DOMContentLoaded', function() {
+
+            // Get all the necessary elements from the DOM
+            const container = document.getElementById('comparison-container');
+            const afterImage = document.getElementById('after-image');
+            const sliderLine = document.getElementById('slider-line');
+            const sliderGrip = document.getElementById('slider-grip');
+
+            let isDragging = false;
+
+            // --- Event Handlers ---
+
+            // Called when the user starts dragging (mouse down or touch start)
+            function startDrag(event) {
+                // Prevent default actions like text selection or page scrolling
+                event.preventDefault();
+                
+                isDragging = true;
+                
+                // Add event listeners to the whole window
+                // This way, the drag still works even if the cursor leaves the container
+                window.addEventListener('mousemove', onDrag);
+                window.addEventListener('touchmove', onDrag, { passive: false }); // passive:false to allow preventDefault
+                
+                window.addEventListener('mouseup', endDrag);
+                window.addEventListener('touchend', endDrag);
+            }
+
+            // Called when the user stops dragging (mouse up or touch end)
+            function endDrag() {
+                isDragging = false;
+                
+                // Remove the window-level event listeners
+                window.removeEventListener('mousemove', onDrag);
+                window.removeEventListener('touchmove', onDrag);
+                
+                window.removeEventListener('mouseup', endDrag);
+                window.removeEventListener('touchend', endDrag);
+            }
+
+            // Called continuously while the user is dragging
+            function onDrag(event) {
+                if (!isDragging) {
+                    return; // Exit if we're not supposed to be dragging
+                }
+                
+                // Prevent scrolling on mobile while dragging
+                event.preventDefault();
+
+                // Get the horizontal position of the mouse or touch
+                let clientX;
+                if (event.type === 'touchmove') {
+                    clientX = event.touches[0].clientX;
+                } else {
+                    clientX = event.clientX;
+                }
+
+                // Calculate the position relative to the container
+                const bounds = container.getBoundingClientRect();
+                let x = clientX - bounds.left;
+
+                // Convert the position to a percentage
+                let percentage = (x / bounds.width) * 100;
+
+                // Clamp the percentage between 0 and 100
+                // This stops the slider from going outside the image box
+                percentage = Math.max(0, Math.min(100, percentage));
+
+                // Apply the new position to the elements
+                updateSliderPosition(percentage);
+            }
+
+            // --- Helper Function ---
+
+            // This function does the actual work of moving the slider and clipping the image
+            function updateSliderPosition(percentage) {
+                // Use clip-path to "reveal" the after-image
+                afterImage.style.clipPath = `polygon(0 0, ${percentage}% 0, ${percentage}% 100%, 0 100%)`;
+                
+                // Move the slider line and grip
+                sliderLine.style.left = `${percentage}%`;
+                sliderGrip.style.left = `${percentage}%`;
+            }
+
+            // --- Initial Setup ---
+
+            // Add the initial "start" event listeners to the grip
+            sliderGrip.addEventListener('mousedown', startDrag);
+            sliderGrip.addEventListener('touchstart', startDrag, { passive: false });
+            
+            // Set the initial position (e.g., 50%)
+            updateSliderPosition(50);
+        });
+    </script>
+
+</body>
+</html>
