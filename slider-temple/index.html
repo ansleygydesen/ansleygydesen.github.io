@@ -15,14 +15,14 @@
             align-items: center;
             min-height: 100vh;
             margin: 0;
-            padding: 20px;
+            padding: 20px; /* Adds some space on small screens */
             box-sizing: border-box;
         }
 
         /* Main container for the entire widget */
         .slider-container {
             width: 100%;
-            max-width: 900px; /* Adjust max-width as needed */
+            max-width: 900px; /* You can adjust this max-width */
             margin: auto;
             text-align: center;
             background: #ffffff;
@@ -49,19 +49,19 @@
         #comparison-wrapper {
             position: relative; /* This is the anchor for the absolute-positioned children */
             width: 100%;
-            overflow: hidden; /* Ensures nothing spills out */
+            overflow: hidden; /* This is what clips the top image */
             border-radius: 8px;
             /* The container's aspect ratio is set by the bottom image */
         }
 
-        /* Bottom image (2025) - sets the size */
+        /* Bottom image (Modern) - sets the size */
         #image-bottom {
             display: block; /* Removes any extra space below the image */
             width: 100%;
             height: auto;
         }
 
-        /* Top image (1920-1930) - absolutely positioned on top */
+        /* Top image (Historic) - absolutely positioned on top */
         #image-top {
             position: absolute;
             top: 0;
