@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Temple Building Comparison</title>
+    
+    <style>
+        /* Basic page styling */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* Main container for the entire widget */
+        .slider-container {
+            width: 100%;
+            max-width: 900px; /* Adjust max-width as needed */
+            margin: auto;
+            text-align: center;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 24px;
+            box-sizing: border-box;
+        }
+
+        .slider-container h1 {
+            font-size: 1.75rem;
+            margin-top: 0;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .slider-container p {
+            font-size: 1rem;
+            margin-bottom: 20px;
+            color: #666;
+        }
+
+        /* The core comparison wrapper */
+        #comparison-wrapper {
+            position: relative;
+            width: 100%;
+            overflow: hidden; /* Ensures nothing spills out */
+            border-radius: 8px;
+            /* The container's aspect ratio is set by the bottom image */
+        }
+
+        /* Bottom image (past) - sets the size */
+        #image-bottom {
+            display: block; /* Removes any extra space below the image */
+            width: 100%;
+            height: auto;
+        }
+
+        /* Top image (present) - absolutely positioned on top */
+        #image-top {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Ensures it covers the bottom image, even if ratios differ */
+            
+            /* Start by showing 50% of the top image */
+            clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);
+            
+            /* Prevent image from being dragged (interferes with slider) */
+            pointer-events: none;
+            user-select: none;
+        }
+
+        /* The draggable slider handle */
+        #slider-handle {
+            position: absolute;
+            top: 0;
+            left: 50%; /* Starts in the middle */
+            width: 4px; /* The line */
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.9);
+            cursor: ew-resize; /* East-West resize cursor */
+            
+            /* Center the 4px line on the 50% mark */
+            transform: translateX(-2px);
+            
+            /* Improve usability on mobile */
+            touch-action: none; 
+        }
+
+        /* The circular "grabber" part of the handle */
+        .slider-grabber {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            
+            /* Centering the grabber */
+            transform: translate(-50%, -50%); 
+            
+            width: 44px;
+            height: 44px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            
+            /* Flexbox to center the arrows */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 8px;
+            box-sizing: border-box;
+            
+            /* Prevent text selection */
+            user-select: none;
+        }
+
+        /* Arrows inside the grabber */
+        .slider-grabber span {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            line-height: 1;
+        }
+        
+        /* When dragging, prevent text selection on the whole page */
+        body.is-dragging {
+            user-select: none;
+            cursor: ew-resize;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="slider-container">
+        <h1>Temple changes after almost 105 years</h1>
+        <p>Click and drag (or swipe) the slider to compare the two images.</p>
+
+        <div id="comparison-wrapper">
+            
+            <img id="image-bottom" src="1920-1930.jpg" alt="The Temple building circa 1920-1930">
+            
+            <img id="image-top" src="2025.jpg" alt="The Temple building in 2025">
+            
+            <div id="slider-handle">
+                <div class="slider-grabber">
+                    <span>&lt;</span>
+                    <span>&gt;</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Wait for the DOM to be fully loaded before running the script
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // Get references to the necessary elements
+            const wrapper = document.getElementById('comparison-wrapper');
+            const topImage = document.getElementById('image-top');
+            const handle = document.getElementById('slider-handle');
+
+            let isDragging = false;
+
+            // --- Event Handlers ---
+
+            // Function to start the drag (for mouse)
+            const startDrag = (e) => {
+                e.preventDefault(); // Prevent default image drag
+                isDragging = true;
+                document.body.classList.add('is-dragging'); // Add class for cursor/user-select styles
+
+                // Add listeners to the window to track movement everywhere on the page
+                window.addEventListener('mousemove', onDrag);
+                window.addEventListener('mouseup', stopDrag);
+            };
+
+            // Function to start the drag (for touch)
+            const startTouch = (e) => {
+                // e.preventDefault(); // Note: preventDefault() on touchstart can block scrolling.
+                // We rely on 'touch-action: none' in CSS instead.
+                isDragging = true;
+                document.body.classList.add('is-dragging');
+
+                // Add listeners for touch events
+                window.addEventListener('touchmove', onDrag);
+                window.addEventListener('touchend', stopDrag);
+            };
+
+            // Function to stop the drag/touch
+            const stopDrag = () => {
+                isDragging = false;
+                document.body.classList.remove('is-dragging');
+                
+                // Clean up window-level event listeners
+                window.removeEventListener('mousemove', onDrag);
+                window.removeEventListener('mouseup', stopDrag);
+                window.removeEventListener('touchmove', onDrag);
+                window.removeEventListener('touchend', stopDrag);
+            };
+
+            // Function to handle the actual dragging
+            const onDrag = (e) => {
+                if (!isDragging) return;
+                
+                // Get the horizontal position of the event (works for mouse and touch)
+                let clientX = e.clientX || e.touches[0].clientX;
+
+                // Get the bounding box of the wrapper
+                let rect = wrapper.getBoundingClientRect();
+                
+                // Calculate the position relative to the wrapper
+                let x = clientX - rect.left;
+                let width = rect.width;
+
+                // --- Clamping ---
+                // Ensure 'x' stays within the wrapper's bounds (0 to width)
+                x = Math.max(0, Math.min(x, width));
+
+                // Convert the position to a percentage
+                let percent = (x / width) * 100;
+
+                // Apply the new percentage to the clip-path and handle position
+                handle.style.left = `${percent}%`;
+                topImage.style.clipPath = `polygon(0 0, ${percent}% 0, ${percent}% 100%, 0 100%)`;
+            };
+
+            // --- Attach Initial Listeners ---
+
+            // Listen for mouse down on the handle
+            handle.addEventListener('mousedown', startDrag);
+
+            // Listen for touch start on the handle
+            handle.addEventListener('touchstart', startTouch);
+        });
+    </script>
+
+</body>
+</html>
