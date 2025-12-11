@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School District Chronic Absenteeism Search</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Find your district's chronic absentee rate</h1>
+        
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Enter school district name...">
+            <div id="suggestions" class="suggestions"></div>
+        </div>
+
+        <div id="resultContainer" class="hidden">
+            <h2 id="districtName"></h2>
+            <div class="chart-container">
+                <canvas id="absenteeChart"></canvas>
+            </div>
+            <div id="statsTable"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
